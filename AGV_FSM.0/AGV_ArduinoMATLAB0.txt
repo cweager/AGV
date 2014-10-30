@@ -1,0 +1,88 @@
+// Motion Directory
+// AGV
+
+#include <Servo.h>
+
+Servo ST1, ST2; // We'll name the Sabertooth servo channel objects ST1 and ST2.
+                
+                // Connections to make:
+                //   Arduino Pin 9  ->  Sabertooth S1
+                //   Arduino Pin 10 ->  Sabertooth S2
+                //   Arduino Pin 11 ->  Possible laser up-down sweep (with servo)
+                //   Arduino GND    ->  Sabertooth 0V
+                //   Arduino VIN    ->  Sabertooth 5V (OPTIONAL, if you want the Sabertooth to power the Arduino)
+                //
+                // We need to specify the pulse widths in attach(). 0 degrees will be full reverse, 180 degrees will be
+                // full forward. Sending a servo command of 90 will stop the motor. Whether the servo pulses control
+                // the motors individually or control throttle and turning depends on your mixed mode setting.
+
+// Notice these attach() calls. The second and third arguments are important.
+// With a single argument, the range is 44 to 141 degrees, with 92 being stopped.
+// With all three arguments, we can use 0 to 180 degrees, with 90 being stopped.
+
+void setup()
+{
+  ST1.attach( 9, 1000, 2000);
+  ST2.attach(10, 1000, 2000); 
+  
+  Serial.begin(9600);
+  
+  delay(2000);
+}
+
+//dir is an int sent from MATLAB (need to figure out how to do that). 
+//Based on MATLAB analysis, a direction will be sent to Arduino 
+//which will then be relayed to the AGV.
+//powerFactor is a double from MATLAB that will increase or decrease speed. May or may not be used.
+void loop()
+{
+  int powerFactor = 1;
+  int dir;
+
+ dir=Serial.read(); // read data
+  
+  switch (dir) {
+    
+    case 0:
+      //Stop
+       ST1.write(90);
+       break;
+       
+    case 1:
+      //Move forward
+      ST1.write(110);
+      break;
+      
+    case 2:
+      //Move backward
+      ST1.write(70);
+      break;
+      
+      case 3:
+      //Move left (wide turn)
+      break;
+      
+    case 4:
+      //Move left (donut)
+      ST2.write(110);
+      break;
+      
+      case 5:
+      //Move right (wide turn)
+      break;
+      
+    case 6:
+      //Move right (donut)
+      ST2.write(70);
+      break;
+      
+    default: 
+      ST1.write(90);
+      ST2.write(90);
+      break;
+  }
+  //Make this a delay until an inturrupt is detected.
+  delay(500); 
+
+}
+
