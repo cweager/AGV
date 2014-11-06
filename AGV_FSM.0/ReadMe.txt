@@ -42,11 +42,15 @@
 //**                  2000us   |   FWD, FULL
 //**                ----------------------------
 //**
+//**		    *Note: For Arduino CX to PWM Pulse Width mapping, see
+//**		    PWM_values.xlsx.
+//**
 //*****************************************************************************
 
 /*
 
 L184 - CONFIGURING REGISTER TCCR2B TO MANIPULATE PWM FREQUENCY TO 4KHZ. DEBUGGING.
+NOTE:	CONFIGURATION COMPLETE.
 
 */
 

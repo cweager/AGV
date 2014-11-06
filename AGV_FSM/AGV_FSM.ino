@@ -3,7 +3,7 @@
 //**  PROGRAM:  AGV_FSM
 //**  AUTHOR:   Cody Eager, 1/c
 //**
-//**  MODULE:   AGV_FSM.ino
+//**  MODULE:   AGV_FSM.0.ino
 //**  DATE:     21 October 2014
 //**
 //**  DESCRIPTION:  AGV_FSM is the software control algorithm used to control
@@ -30,16 +30,17 @@
 //**
 //**                *Note: Prototype includes state control using serial
 //**                commands from the serial monitor.
+//**
 //**                *Note: The use of ISR prevents us from using Arduino the
-//**                Servo library.  This algorithm uses PWM signals via Arduino
-//**                analogWrite to move the AGV.  The following table relates
+//**                Servo library.  This algorithm uses PWM signals via compare register
+//**                TCCR2B to move the AGV.  The following table relates
 //**                the pulse width to motor response:
 //**
 //**                ARDUINO CX | PULSE WIDTH  | SABERTOOTH STATE
 //**                --------------------------------------------
-//**                   XXX     |     1000us   |   REV, FULL
-//**                   XXX     |     1500us   |   ALL STOP
-//**                   XXX     |     2000us   |   FWD, FULL
+//**                   62      |     1008us   |   REV, FULL
+//**                   93      |     1504us   |   ALL STOP
+//**                   124     |     2000us   |   FWD, FULL
 //**                --------------------------------------------
 //**
 //**                NOTE: The following table represents the associated frequency for the
@@ -209,7 +210,7 @@ void setup(){
   USART_puts("//**\n");
   USART_puts("//**  PROGRAM:  AGV_FSM\n//**  AUTHOR:   Cody Eager, 1/c\n");
   USART_puts("//**\n");
-  USART_puts("//**  MODULE:   AGV_FSM.ino\n//**  DATE:     20 October 2014\n");
+  USART_puts("//**  MODULE:   AGV_FSM.0.ino\n//**  DATE:     20 October 2014\n");
   USART_puts("//**\n");
   USART_puts("//*************************************************************************************\n\n");
   
@@ -407,6 +408,10 @@ void loop(){
 
   char buf[50];
   static uint8_t last_state = !initial;
+  
+  //int8_t state_CX = -1;
+  //state_CX = Serial.read();  // NOTE:  Command uses "vector_18" - Compiler error
+                               // Experiment with analogRead(inputPin)
 
   /*  **********************************
    *
@@ -488,11 +493,21 @@ void loop(){
    *  state commands quickly.
    *
    **********************************  */
+   
   
-  
+  /*  **********************************
+   *
+   *  This section of code handles
+   *  user commands from the serial
+   *  monitor.
+   *
+   **********************************  */
+ 
+   
   //  Quickly Receive State Commands from Serial Monitor via USART
+    //Only enter if statement if a command is entered into USART, else skip
   
-  if(USART_is_string()){
+  //if(USART_is_string()){
     USART_gets(buf);  
     if (!strcmp(buf,"1") || !strcmp(buf, "STOP")){
       state = all_stop;
@@ -511,6 +526,7 @@ void loop(){
     }
     else if(!strcmp(buf,"4") || !strcmp(buf, "FWD_RGT")){
       state = fwd_rgt;
+      command_f = 1;
       USART_puts(strcat(buf, "\n\n"));
     }
     else if(!strcmp(buf,"5") || !strcmp(buf, "REV")){
@@ -543,8 +559,59 @@ void loop(){
       USART_puts("\n** Invalid command. Please type an integer value from 1-9.\n\n");
       USART_puts("** Command:  ");
     }
-  }
+  //}
   
+  /*
+  /*  **********************************
+   *
+   *  This section of code handles
+   *  AGV commands from the MATLAB
+   *
+   **********************************  /
+   
+  
+  //  Quickly Receive State Commands from MATLAB
+    //Only enter if statement if a command is supplied by MATLAB, else skip
+    
+  if (state_CX != -1){   
+    if (state_CX == 1){
+      state = all_stop;
+      command_f = 1;
+    }
+    else if(state_CX == 2){
+      state = fwd;
+      command_f = 1;
+    }
+    else if(state_CX == 3){
+      state = fwd_lft;
+      command_f = 1;
+    }
+    else if(state_CX == 4){
+      state = fwd_rgt;
+      command_f = 1;
+    }
+    else if(state_CX == 5){
+      state = rev;
+      command_f = 1;
+    }
+    else if(state_CX == 6){
+      state = rev_lft;
+      command_f = 1;
+    }
+    else if(state_CX == 7){
+      state = rev_rgt;
+      command_f = 1;
+    }
+    else if(state_CX == 8){
+      state = lft_spin;
+      command_f = 1;
+    }
+    else if(state_CX == 9){
+      state = rgt_spin;
+      command_f = 1;
+    }
+  }
+  */
   /*
   switch(state){
 

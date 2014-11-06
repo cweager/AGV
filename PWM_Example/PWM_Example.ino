@@ -12,9 +12,9 @@
 //**
 //**                ARDUINO CX | PULSE WIDTH  
 //**                --------------------------
-//**                   XXX     |     1000us   
-//**                   XXX     |     1500us   
-//**                   XXX     |     2000us   
+//**                   62      |     1008us   
+//**                   93      |     1504us   
+//**                   124     |     2000us   
 //**                --------------------------
 //**
 //**  NOTE: The following table represents the associated frequency for the

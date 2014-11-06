@@ -16,31 +16,48 @@
 //**
 //**                MATLAB CX  |  ARDUINO STATE
 //**                ---------------------------
-//**                    0      |      STOP
-//**                    1      |      FWD
-//**                    2      |      FWD, LFT
-//**                    3      |      FWD, RGT
-//**                    4      |      REV
-//**                    5      |      REV, LFT
-//**                    6      |      REV, RGT
-//**                    7      |      SPIN LFT
-//**                    8      |      SPIN RGT
-//**                    9      |      N/A
+//**                    1      |      STOP
+//**                    2      |      FWD
+//**                    3      |      FWD, LFT
+//**                    4      |      FWD, RGT
+//**                    5      |      REV
+//**                    6      |      REV, LFT
+//**                    7      |      REV, RGT
+//**                    8      |      SPIN LFT
+//**                    9      |      SPIN RGT
+//**                    0      |      N/A
 //**                ---------------------------
 //**
 //**                *Note: Prototype includes state control using serial
 //**                commands from the serial monitor.
+//**
 //**                *Note: The use of ISR prevents us from using Arduino the
-//**                Servo library.  This algorithm uses PWM signals via Arduino
-//**                analogWrite to move the AGV.  The following table relates
+//**                Servo library.  This algorithm uses PWM signals via compare register
+//**                TCCR2B to move the AGV.  The following table relates
 //**                the pulse width to motor response:
 //**
-//**                ARDUINO CX | SABERTOOTH STATE
-//**                ----------------------------
-//**                  1000us   |   REV, FULL
-//**                  1500us   |   ALL STOP
-//**                  2000us   |   FWD, FULL
-//**                ----------------------------
+//**                ARDUINO CX | PULSE WIDTH  | SABERTOOTH STATE
+//**                --------------------------------------------
+//**                   62      |     1008us   |   REV, FULL
+//**                   93      |     1504us   |   ALL STOP
+//**                   124     |     2000us   |   FWD, FULL
+//**                --------------------------------------------
+//**
+//**                NOTE: The following table represents the associated frequency for the
+//**                configuration of the TCCR2B register for timer 2:
+//**
+//**                SETTING    |     DIVISOR  |  Frequency  
+//**                --------------------------------------
+//**                   0x01    |      1       |   31372Hz  
+//**                   0x02    |      8       |   3921Hz
+//**                   0x03    |      32      |   980Hz
+//**                   0x04    |      64      |   490Hz
+//**                   0x05    |      128     |   245Hz
+//**                   0x06    |      256     |   122Hz
+//**                   0x07    |      1024    |   30Hz
+//**                --------------------------------------
+//** 
+//**               TCCR2B = TCCR2B & 0b11111000 | <setting>;
 //**
 //*****************************************************************************
 

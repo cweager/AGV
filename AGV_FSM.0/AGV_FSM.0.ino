@@ -30,16 +30,17 @@
 //**
 //**                *Note: Prototype includes state control using serial
 //**                commands from the serial monitor.
+//**
 //**                *Note: The use of ISR prevents us from using Arduino the
-//**                Servo library.  This algorithm uses PWM signals via Arduino
-//**                analogWrite to move the AGV.  The following table relates
+//**                Servo library.  This algorithm uses PWM signals via compare register
+//**                TCCR2B to move the AGV.  The following table relates
 //**                the pulse width to motor response:
 //**
 //**                ARDUINO CX | PULSE WIDTH  | SABERTOOTH STATE
 //**                --------------------------------------------
-//**                   XXX     |     1000us   |   REV, FULL
-//**                   XXX     |     1500us   |   ALL STOP
-//**                   XXX     |     2000us   |   FWD, FULL
+//**                   62      |     1008us   |   REV, FULL
+//**                   93      |     1504us   |   ALL STOP
+//**                   124     |     2000us   |   FWD, FULL
 //**                --------------------------------------------
 //**
 //**                NOTE: The following table represents the associated frequency for the
@@ -270,8 +271,8 @@ ISR(TIMER1_COMPA_vect){
   switch(state){
 
   case initial:
-    OCR2B = 95; //Set PWM of S1_PIN to 1500us
-    OCR2A = 95; //Set PWM of S2_PIN to 1500us
+    OCR2B = 93; //Set PWM of S1_PIN to 1500us
+    OCR2A = 93; //Set PWM of S2_PIN to 1500us
     // Automatically enter All Stop state after 2.5 seconds
     if (++state_time > 250){
       state = all_stop;
@@ -280,8 +281,8 @@ ISR(TIMER1_COMPA_vect){
     break;
 
   case all_stop:
-    OCR2B = 95; //Set PWM of S1_PIN to 1500us
-    OCR2A = 95; //Set PWM of S2_PIN to 1500us
+    OCR2B = 93; //Set PWM of S1_PIN to 1500us
+    OCR2A = 93; //Set PWM of S2_PIN to 1500us
     break;
 
   case fwd:
@@ -295,7 +296,7 @@ ISR(TIMER1_COMPA_vect){
     }
     
     OCR2B = 128; //Set PWM of S1_PIN to 2000us
-    OCR2A = 95; //Set PWM of S2_PIN to 1500us
+    OCR2A = 93; //Set PWM of S2_PIN to 1500us
     break;
 
   case fwd_lft:
@@ -307,8 +308,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 110; //Set PWM of S1_PIN to 1650us
-    OCR2A = 100; //Set PWM of S2_PIN to 1600us
+    OCR2B = 124; //Set PWM of S1_PIN to 1650us
+    OCR2A = 99;  //Set PWM of S2_PIN to 1600us
     break;
 
   case fwd_rgt:
@@ -320,8 +321,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 110; //Set PWM of S1_PIN to 1650us
-    OCR2A = 80; //Set PWM of S2_PIN to 1600us
+    OCR2B = 124; //Set PWM of S1_PIN to 1650us
+    OCR2A = 87;  //Set PWM of S2_PIN to 1400us
     break;
 
   case rev:
@@ -334,7 +335,7 @@ ISR(TIMER1_COMPA_vect){
       state_time = 0;
     }
     OCR2B = 60; //Set PWM of S1_PIN to 1000us
-    OCR2A = 95; //Set PWM of S2_PIN to 1500us
+    OCR2A = 93; //Set PWM of S2_PIN to 1500us
     break;
 
   case rev_lft:
@@ -346,8 +347,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 75; //Set PWM of S1_PIN to 1450us
-    OCR2A = 85; //Set PWM of S2_PIN to 1400us
+    OCR2B = 62; //Set PWM of S1_PIN to 1000us
+    OCR2A = 87; //Set PWM of S2_PIN to 1400us
     break;
 
   case rev_rgt:
@@ -359,8 +360,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 75;  //Set PWM of S1_PIN to 1550us
-    OCR2A = 100; //Set PWM of S2_PIN to 1600us
+    OCR2B = 62;  //Set PWM of S1_PIN to 1000us
+    OCR2A = 99;  //Set PWM of S2_PIN to 1600us
     break;
 
   case lft_spin:
@@ -372,8 +373,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 95; //Set PWM of S1_PIN to 1500us
-    OCR2A = 111; //Set PWM of S2_PIN to 1750
+    OCR2B = 93; //Set PWM of S1_PIN to 1500us
+    OCR2A = 112; //Set PWM of S2_PIN to 1800us
     break;
 
   case rgt_spin:
@@ -385,8 +386,8 @@ ISR(TIMER1_COMPA_vect){
       state = all_stop;
       state_time = 0;
     }
-    OCR2B = 95; //Set PWM of S1_PIN to 1500us
-    OCR2A = 68; //Set PWM of S2_PIN to 1250
+    OCR2B = 93; //Set PWM of S1_PIN to 1500us
+    OCR2A = 74; //Set PWM of S2_PIN to 1200us
     break;
 
   default:
@@ -506,8 +507,9 @@ void loop(){
   //  Quickly Receive State Commands from Serial Monitor via USART
     //Only enter if statement if a command is entered into USART, else skip
   
-  if(USART_is_string()){
-    USART_gets(buf);  
+  //if(USART_is_string()){
+  USART_gets(buf);
+  if (buf){  
     if (!strcmp(buf,"1") || !strcmp(buf, "STOP")){
       state = all_stop;
       command_f = 1;
@@ -559,6 +561,7 @@ void loop(){
       USART_puts("** Command:  ");
     }
   }
+  //}
   
   /*
   /*  **********************************
@@ -610,45 +613,6 @@ void loop(){
       command_f = 1;
     }
   }
-  */
-  /*
-  switch(state){
-
-  case initial:
-    break;
-
-  case all_stop:
-    break;
-
-  case fwd:
-    break;
-
-  case fwd_lft:
-    break;
-
-  case fwd_rgt:
-    break;
-
-  case rev:
-    break;
-
-  case rev_lft:
-    break;
-
-  case rev_rgt:
-    break;
-
-  case lft_spin:
-    break;
-
-  case rgt_spin:
-    break;
-
-  default:
-    break; 
-  }
-  */
-}
 
 
 /*********************************************************************************
